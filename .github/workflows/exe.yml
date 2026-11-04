@@ -67,10 +67,46 @@ jobs:
           New-Item -ItemType Directory paket\Auto-Move | Out-Null
           Copy-Item dist\Auto-Move.exe, README.md paket\Auto-Move\
           Compress-Archive -Path paket\Auto-Move -DestinationPath Auto-Move-windows.zip
+      - name: Kurulum dosyası (Auto-Move-Setup.exe)
+        shell: pwsh
+        run: |
+          $iscc = "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe"
+          if (-not (Test-Path $iscc)) { choco install innosetup -y --no-progress | Out-Null }
+          $v = node -p "require('./package.json').version"
+          & $iscc /Qp "/DMyVersion=$v" installer\Auto-Move.iss
+          if ($LASTEXITCODE -ne 0) { throw 'Kurulum dosyası derlenemedi' }
+          Copy-Item dist\Auto-Move-Setup.exe Auto-Move-Setup.exe
+      - name: Kurulum, kısayollar, açılış ve kaldırma
+        shell: pwsh
+        run: |
+          $app = "$env:LOCALAPPDATA\Programs\Auto-Move"; $run = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Run'
+          $p = Start-Process Auto-Move-Setup.exe -ArgumentList '/VERYSILENT','/SUPPRESSMSGBOXES','/NORESTART','/TASKS=masaustu,baslangic' -PassThru -Wait
+          if ($p.ExitCode -ne 0) { throw "Kurulum başarısız (çıkış kodu $($p.ExitCode))" }
+          if (-not (Test-Path "$app\Auto-Move.exe")) { throw 'Auto-Move.exe kurulmadı' }
+          if (-not (Test-Path "$([Environment]::GetFolderPath('Desktop'))\Auto-Move.lnk")) { throw 'Masaüstü kısayolu yok' }
+          if (-not (Test-Path "$([Environment]::GetFolderPath('Programs'))\Auto-Move\Auto-Move.lnk")) { throw 'Başlat menüsü kısayolu yok' }
+          $val = (Get-ItemProperty $run).'Auto-Move'; Write-Host "Başlangıç: $val"
+          if ($val -ne "`"$app\Auto-Move.exe`" --arka-plan") { throw 'Windows başlangıç kaydı yanlış' }
+          $env:N8N8_NO_OPEN = '1'; $env:PORT = '5691'; $env:N8N8_DATA = "$env:RUNNER_TEMP\veri2"; $env:N8N8_CONSOLE = '1'
+          $s = Start-Process "$app\Auto-Move.exe" -PassThru -RedirectStandardOutput "$env:RUNNER_TEMP\k-out.txt" -RedirectStandardError "$env:RUNNER_TEMP\k-err.txt"
+          $ok = $false
+          for ($i = 0; $i -lt 30 -and -not $ok; $i++) { Start-Sleep 2; try { $ok = (Invoke-WebRequest http://127.0.0.1:5691/api/info -UseBasicParsing).Content -match '"version"' } catch {} }
+          Get-Content "$env:RUNNER_TEMP\k-out.txt", "$env:RUNNER_TEMP\k-err.txt"
+          if (-not $ok) { Stop-Process -Id $s.Id -Force; throw 'Kurulan Auto-Move açılmadı' }
+          # uninstall while the program is still running: the uninstaller must close it first
+          Start-Process "$app\unins000.exe" -ArgumentList '/VERYSILENT','/SUPPRESSMSGBOXES','/NORESTART' -Wait
+          for ($i = 0; $i -lt 30 -and (Test-Path "$app\Auto-Move.exe"); $i++) { Start-Sleep 1 }
+          if (Test-Path "$app\Auto-Move.exe") { throw 'Kaldırma Auto-Move.exe dosyasını silmedi' }
+          if ((Get-ItemProperty $run).'Auto-Move') { throw 'Kaldırma Windows başlangıç kaydını silmedi' }
+          if (Test-Path "$([Environment]::GetFolderPath('Desktop'))\Auto-Move.lnk") { throw 'Kaldırma masaüstü kısayolunu silmedi' }
+          if (-not (Test-Path "$env:RUNNER_TEMP\veri2")) { throw 'Kaldırma veri klasörünü silmemeliydi' }
+          Write-Host 'Kurulum ve kaldırma tamam'
       - uses: actions/upload-artifact@v4
         with:
           name: Auto-Move-windows
-          path: Auto-Move-windows.zip
+          path: |
+            Auto-Move-windows.zip
+            Auto-Move-Setup.exe
       - name: Sürüm (Release) olarak yayımla
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         shell: pwsh
@@ -79,5 +115,5 @@ jobs:
         run: |
           $v = 'v' + (node -p "require('./package.json').version")
           gh release view $v 2>$null
-          if ($LASTEXITCODE -eq 0) { gh release upload $v Auto-Move-windows.zip --clobber }
-          else { gh release create $v Auto-Move-windows.zip --title "Auto-Move $v" --notes "Windows: Auto-Move-windows.zip dosyasını indirip açın ve Auto-Move.exe'ye çift tıklayın. Node.js kurmanız gerekmez. macOS ve Linux için kaynak kodu indirip baslat.command ya da baslat.sh ile başlatın." }
+          if ($LASTEXITCODE -eq 0) { gh release upload $v Auto-Move-Setup.exe Auto-Move-windows.zip --clobber }
+          else { gh release create $v Auto-Move-Setup.exe Auto-Move-windows.zip --title "Auto-Move $v" --notes "Windows: Auto-Move-Setup.exe dosyasını indirip çalıştırın. Program kurulur, Başlat menüsüne ve masaüstüne kısayol eklenir; Node.js gerekmez. Kurmadan kullanmak isterseniz Auto-Move-windows.zip dosyasını açıp Auto-Move.exe'ye çift tıklayın. macOS ve Linux için kaynak kodu indirip baslat.command ya da baslat.sh ile başlatın." }

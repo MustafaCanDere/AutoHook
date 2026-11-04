@@ -4,9 +4,16 @@ Auto-Move, kendi bilgisayarınızda çalışan görsel bir iş akışı otomasyo
 
 ## Kurulum
 
-### Windows: tek dosya (Auto-Move.exe)
+### Windows: kurulum dosyası (Auto-Move-Setup.exe)
 
-[Sürümler (Releases)](https://github.com/MustafaCanDere/AutoHook/releases) sayfasından `Auto-Move-windows.zip` dosyasını indirin. İçindeki `Auto-Move.exe` dosyasını istediğiniz bir klasöre çıkarıp çift tıklayın. Node.js kurmanız ya da `baslat.bat` çalıştırmanız gerekmez; her şey bu dosyanın içindedir. Tarayıcı kendiliğinden Auto-Move'u gösterir. Program siyah bir pencerede değil, saatin yanındaki simgede çalışır.
+[Sürümler (Releases)](https://github.com/MustafaCanDere/AutoHook/releases) sayfasından `Auto-Move-Setup.exe` dosyasını indirip çalıştırın. Kurulum yönetici izni istemez; program kendi kullanıcı klasörünüze (`%LOCALAPPDATA%\Programs\Auto-Move`) kurulur. Başlat menüsüne ve isterseniz masaüstüne "Auto-Move" kısayolu eklenir; kurulumda "Windows açılınca başlat" seçeneğini de işaretleyebilirsiniz. Kurulum bitince Auto-Move açılır, sonra kısayola çift tıklamanız yeterlidir.
+
+- Kaldırmak için Ayarlar > Uygulamalar'dan ya da Başlat menüsündeki "Auto-Move'u kaldır" kısayolundan kaldırın. Kaldırma çalışan programı kapatır ve başlangıç kaydını siler. Akışlarınız ve kimlik bilgileriniz `.8n8` klasöründe kalır; yeniden kurunca olduğu gibi açılır.
+- Yeni sürümü kurmak için yeni `Auto-Move-Setup.exe`'yi çalıştırmanız yeterlidir. Program açıksa kurulum onu kapatır. Programın içindeki "Şimdi güncelle" de kurulu sürümde çalışır.
+
+### Windows: kurmadan tek dosya (Auto-Move.exe)
+
+Kurulum yapmak istemezseniz aynı sayfadan `Auto-Move-windows.zip` dosyasını indirin. İçindeki `Auto-Move.exe` dosyasını istediğiniz bir klasöre çıkarıp çift tıklayın. Node.js kurmanız ya da `baslat.bat` çalıştırmanız gerekmez; her şey bu dosyanın içindedir. Tarayıcı kendiliğinden Auto-Move'u gösterir. Program siyah bir pencerede değil, saatin yanındaki simgede çalışır.
 
 - İmzasız bir program olduğu için Windows ilk açılışta "Windows bilgisayarınızı korudu" uyarısı gösterebilir. "Ek bilgi"ye, sonra "Yine de çalıştır"a tıklayın.
 - Güvenlik duvarı sorarsa izin vermeniz gerekmez: Auto-Move yalnızca bu bilgisayardan erişilecek şekilde açılır.
@@ -301,6 +308,7 @@ Claude node'u için [console.anthropic.com](https://console.anthropic.com) adres
 - MongoDB node'u MongoDB 3.6 ve sonrasıyla, kullanıcı adı/şifre (SCRAM) girişiyle çalışır; X.509, LDAP ve Kerberos girişi desteklenmez. MQTT tetikleyicisi program açıkken bağlı kalır, kapalıyken gelen mesajları almaz.
 - Özet sayfası saklanan çalıştırma kayıtlarından hesaplanır (`N8N8_MAX_EXECUTIONS`, varsayılan son 1000).
 - Ekip kullanımı tek bir bilgisayarda çalışan tek bir Auto-Move içindir; şirket dizini (LDAP, Google/Microsoft ile giriş) ve iki adımlı doğrulama yoktur.
+- `Auto-Move-Setup.exe` GitHub'ın Windows makinesinde sessiz kurulum, kısayollar, başlangıç kaydı, kurulan programın açılması ve kaldırma ile denendi; kurulum sihirbazının ekranları gerçek bir bilgisayarda tıklanarak denenmedi.
 - `Auto-Move.exe` GitHub'ın Windows Server makinesinde oluşturulup testlerin tamamı exe'ye karşı çalıştırıldı. Kişisel bir Windows 10/11 bilgisayarda (SmartScreen, antivirüs) ayrıca denenmedi.
 - Saatin yanındaki simgenin betiği GitHub'ın Windows makinesinde açılıp bildirim dosyasını okuduğu denendi, ama menüye tıklama ve bildirimin ekranda görünmesi gerçek bir masaüstünde denenmedi. Kendiliğinden güncelleme Linux'ta derlenmiş tek dosya programla uçtan uca (indir, değiştir, yeniden başla) denendi, Windows'ta denenmedi. Windows kayıt defterine ("Windows açılınca başlat") yazma da gerçek bir bilgisayarda denenmedi.
 
