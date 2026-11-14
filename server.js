@@ -617,9 +617,9 @@ route('POST', '/api/import/convert', ({ body }) => {
   throw new HttpError(400, 'Bu dosya bir Auto-Move ya da n8n akışı gibi görünmüyor');
 });
 
-route('GET', '/api/templates', () => templates.LIST);
+route('GET', '/api/templates', () => templates.describeList());
 route('POST', '/api/templates/:key', ({ params, user }) => {
-  const t = templates.TEMPLATES[params.key]; if (!t) throw new HttpError(404, 'Şablon bulunamadı');
+  const t = Object.hasOwn(templates.TEMPLATES, params.key) && templates.TEMPLATES[params.key]; if (typeof t !== 'function') throw new HttpError(404, 'Şablon bulunamadı');
   return store.saveWorkflow(owned(user, { ...t(), active: false }));
 });
 route('GET', '/api/files', () => {

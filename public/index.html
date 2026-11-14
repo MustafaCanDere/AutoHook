@@ -318,7 +318,7 @@ pre.logs { margin: 0; font: 12px/1.5 var(--mono); background: var(--surface-2); 
 .xd .tl-row { grid-template-columns: minmax(0, 1fr) 110px; }
 
 /* ---------- modal & palette ---------- */
-#modal { position: fixed; inset: 0; background: rgba(8,14,20,.45); z-index: 50; display: grid; place-items: start center; padding: 8vh 16px 16px; overflow: auto; }
+#modal { position: fixed; inset: 0; background: rgba(8,14,20,.45); z-index: 50; display: grid; grid-template-columns: minmax(0, 1fr); place-items: start center; padding: 8vh 16px 16px; overflow: auto; }
 .mcard { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; box-shadow: var(--shadow-lg); width: 580px; max-width: 100%; display: flex; flex-direction: column; max-height: 84vh; }
 .mhead { display: flex; align-items: center; justify-content: space-between; padding: 14px 16px 10px; }
 .mhead h2 { margin: 0; font-size: 16px; }
@@ -335,11 +335,35 @@ pre.logs { margin: 0; font: 12px/1.5 var(--mono); background: var(--surface-2); 
 .pal-item small { color: var(--muted); font-size: 12px; }
 .pal-foot { border-top: 1px solid var(--line); padding: 9px 16px; font-size: 11.5px; color: var(--muted); display: flex; flex-wrap: wrap; gap: 4px 14px; }
 kbd { font: 500 11px var(--mono); border: 1px solid var(--line); border-bottom-width: 2px; border-radius: 4px; padding: 0 4px; background: var(--surface-2); }
-.tpls { display: grid; gap: 10px; }
-.tpl { text-align: left; border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; background: var(--surface); display: flex; flex-direction: column; gap: 6px; }
-.tpl:hover { border-color: var(--accent); }
-.tpl b { font-size: 14px; }
-.tpl span { color: var(--muted); font-size: 12.5px; line-height: 1.45; }
+.tpls { display: grid; gap: 10px; grid-template-columns: repeat(auto-fill, minmax(min(300px, 100%), 1fr)); align-items: stretch; }
+.tpls > .empty { grid-column: 1 / -1; }
+.tpl { text-align: left; border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; background: var(--surface); display: flex; flex-direction: column; gap: 7px; transition: border-color .12s, box-shadow .12s, transform .12s; }
+.tpl:hover, .tpl:focus-visible { border-color: var(--accent); box-shadow: var(--shadow); transform: translateY(-1px); }
+.tpl:disabled { opacity: .6; cursor: progress; }
+.tpl b { font-size: 14px; line-height: 1.3; }
+.tpl-top { display: flex; gap: 8px; align-items: flex-start; justify-content: space-between; }
+.tpl-text { color: var(--muted); font-size: 12.5px; line-height: 1.45; flex: 1; }
+.tpl-needs { display: flex; gap: 6px; align-items: flex-start; color: var(--muted); font-size: 11.5px; line-height: 1.4; border-top: 1px dashed var(--line); padding-top: 7px; }
+.tpl-needs svg.i { width: 13px; height: 13px; margin-top: 1px; }
+.badge { font: 600 10.5px var(--font); padding: 2px 7px; border-radius: 10px; white-space: nowrap; background: var(--surface-2); color: var(--muted); border: 1px solid var(--line); }
+.badge.ok { background: var(--accent-soft); color: var(--accent); border-color: transparent; }
+.mhead .count { font: 600 11px var(--mono); color: var(--muted); background: var(--surface-2); border-radius: 9px; padding: 1px 7px; vertical-align: middle; }
+.tpl-bar { padding: 0 16px 12px; display: flex; flex-direction: column; gap: 10px; border-bottom: 1px solid var(--line); margin-bottom: 12px; }
+.tpl-search { position: relative; } .tpl-search svg.i { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: var(--muted); pointer-events: none; }
+.tpl-search .inp { padding-left: 32px; }
+.tpl-cats { display: flex; gap: 6px; flex-wrap: wrap; }
+.tpl-cats button { border: 1px solid var(--line); background: var(--surface); border-radius: 16px; padding: 3px 10px; font-size: 12.5px; }
+.tpl-cats button span { color: var(--muted); font: 500 11px var(--mono); margin-left: 2px; }
+.tpl-cats button:hover { border-color: var(--accent); }
+.tpl-cats button.on { background: var(--accent); border-color: var(--accent); color: var(--accent-fg); }
+.tpl-cats button.on span { color: inherit; opacity: .8; }
+.tpl-foot { justify-content: space-between; } .tpl-foot .desc { margin: 0; font-size: 12px; }
+.tpl-start { margin-top: 22px; }
+kbd { font: 600 11px var(--mono); padding: 1px 6px; border-radius: 5px; border: 1px solid var(--line-strong); border-bottom-width: 2px; background: var(--surface-2); color: var(--fg); white-space: nowrap; }
+.keys section { display: flex; flex-direction: column; gap: 2px; } .keys h3 { font-size: 12px; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); margin: 4px 0 4px; }
+.krow { display: flex; justify-content: space-between; gap: 12px; padding: 5px 0; border-bottom: 1px solid var(--line); font-size: 13px; align-items: center; } .krow i { font-style: normal; color: var(--muted); font-size: 11.5px; }
+.cempty-acts { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; } .cempty .hint { font-size: 12px; color: var(--muted); }
+.tpl-start h2 { font-size: 14px; margin: 0 0 10px; display: flex; align-items: center; justify-content: space-between; gap: 8px; }
 .tpl .flowline { display: flex; gap: 4px; flex-wrap: wrap; }
 .tpl .flowline i { font-style: normal; font: 500 10.5px var(--mono); padding: 1px 7px; border-radius: 9px; background: var(--surface-2); border: 1px solid var(--line); }
 #toast { position: fixed; left: 50%; bottom: 60px; transform: translateX(-50%); z-index: 60; display: flex; flex-direction: column; gap: 6px; align-items: center; pointer-events: none; }
@@ -434,6 +458,7 @@ function download(name, text) {
   setTimeout(() => URL.revokeObjectURL(a.href), 1000);
 }
 const ICONS = {
+  search: 'M11 4a7 7 0 1 0 0 14a7 7 0 1 0 0-14zM20 20l-4-4', keyboard: 'M3 6h18v12H3zM7 10h.01M11 10h.01M15 10h.01M7 14h10',
   play: 'M7 5l12 7-12 7z', clock: 'M12 3a9 9 0 1 0 0 18a9 9 0 1 0 0-18zM12 7v5l3 2', bolt: 'M13 3L5 14h6l-1 7 8-11h-6z',
   form: 'M5 4h14v16H5zM8 8h8M8 12h8M8 16h4', alert: 'M12 4l9 16H3zM12 10v4M12 17v.5', enter: 'M10 7l5 5-5 5M15 12H3M14 4h6v16h-6',
   globe: 'M12 3a9 9 0 1 0 0 18a9 9 0 1 0 0-18zM3 12h18M12 3c3 3.5 3 14.5 0 18M12 3c-3 3.5-3 14.5 0 18', reply: 'M9 8L4 12l5 4M4 12h10a6 6 0 0 1 6 6',
@@ -550,7 +575,7 @@ async function pageWorkflows() {
       <button class="btn primary" id="wf-new">${icon('plus')}Yeni akış</button>` : ''}</div>
     <div class="wf-filters"><div class="seg" id="wf-state">${[['', 'Hepsi'], ['on', 'Etkin'], ['off', 'Kapalı']].map(([k, l]) => `<button data-st="${k}" class="${k ? '' : 'on'}">${l}</button>`).join('')}</div><div id="wf-tags" class="tagbar"></div></div>
     <p class="lead">Etkin akışlar program açık olduğu sürece zamanlayıcı, webhook ve formlardan kendiliğinden çalışır. Manuel akışlar editörden çalıştırılır.<span id="wf-trash"></span></p>
-    <div class="card list" id="wf-list"></div></div></div>`;
+    <div class="card list" id="wf-list"></div><div id="wf-start"></div></div></div>`;
   const draw = () => {
     const tags = allTags(); if (q.tag && !tags.includes(q.tag)) q.tag = '';
     $('#wf-tags').innerHTML = tags.length ? tags.map(t => `<button class="tag${q.tag === t ? ' on' : ''}" data-tagf="${esc(t)}">#${esc(t)}</button>`).join('') : '';
@@ -574,13 +599,24 @@ async function pageWorkflows() {
     $('#wf-new2')?.addEventListener('click', newWorkflow);
   };
   draw();
+  // few workflows yet: suggest templates that run right away
+  if (canEdit() && G.workflows.length < 4) (async () => {
+    try {
+      TPL_CACHE ||= await api('GET', '/api/templates');
+      const pick = TPL_CACHE.filter(t => t.offline).slice(0, 3);
+      if (!pick.length || !$('#wf-start')) return;
+      $('#wf-start').innerHTML = `<section class="tpl-start"><h2>Hazır şablonla başlayın <button class="btn sm" id="wf-start-all">${icon('grid')}Tüm şablonlar (${TPL_CACHE.length})</button></h2><div class="tpls">${pick.map(tplCard).join('')}</div></section>`;
+      $('#wf-start').addEventListener('click', e => { const b = e.target.closest('[data-tpl]'); if (b) { b.disabled = true; useTemplate(b.dataset.tpl); } });
+      $('#wf-start-all').addEventListener('click', () => openTemplates());
+    } catch {}
+  })();
   const trashLink = async () => { const t = await api('GET', '/api/trash').catch(() => []); $('#wf-trash').innerHTML = t.length ? ` <a href="#/cop">Çöp kutusu (${t.length}) →</a>` : ''; };
   trashLink();
   $('#wf-search').addEventListener('input', e => { q.s = e.target.value.toLocaleLowerCase('tr'); draw(); });
   $('#wf-state').addEventListener('click', e => { const b = e.target.closest('[data-st]'); if (!b) return; q.state = b.dataset.st; $('#wf-state').querySelectorAll('button').forEach(x => x.classList.toggle('on', x === b)); draw(); });
   view.querySelector('.page-in').addEventListener('click', e => { const b = e.target.closest('[data-tagf]'); if (!b) return; q.tag = q.tag === b.dataset.tagf ? '' : b.dataset.tagf; draw(); });
   $('#wf-new')?.addEventListener('click', newWorkflow);
-  $('#wf-tpl')?.addEventListener('click', openTemplates);
+  $('#wf-tpl')?.addEventListener('click', () => openTemplates());
   $('#wf-ai')?.addEventListener('click', () => openAIBuild(null));
   $('#wf-import')?.addEventListener('click', () => openImport(async wf => { const saved = await api('POST', '/api/workflows', wf); location.hash = `#/akis/${saved.id}`; }));
   $('#wf-list').addEventListener('change', async e => {
@@ -624,14 +660,56 @@ async function newWorkflow() {
 function exportJSON(wf) {
   return JSON.stringify({ format: '8n8/akis', surum: 1, name: wf.name, settings: { timeout: wf.settings?.timeout }, tags: wf.tags, nodes: wf.nodes.map(({ id, type, name, x, y, params, disabled, settings, pinData }) => ({ id, type, name, x, y, params, disabled, settings, pinData })), edges: wf.edges }, null, 2);
 }
-async function openTemplates() {
-  const list = await api('GET', '/api/templates');
-  openModal(`<div class="mhead"><h2>Şablonlar</h2><button class="icon-btn" data-close aria-label="Kapat">${icon('x')}</button></div>
-    <div class="mbody"><p class="desc">Şablon yeni bir akış olarak eklenir; mevcut akışlarınız değişmez.</p><div class="tpls">
-    ${list.map(t => `<button class="tpl" data-tpl="${t.key}"><b>${esc(t.title)}</b><span>${esc(t.text)}</span><span class="flowline">${t.flow.map(f => `<i>${esc(f)}</i>`).join('')}</span></button>`).join('')}</div></div>`);
-  $('#modal').querySelectorAll('[data-tpl]').forEach(b => b.addEventListener('click', async () => {
-    const wf = await api('POST', `/api/templates/${b.dataset.tpl}`); closeModal(); location.hash = `#/akis/${wf.id}`; toast(`"${wf.name}" eklendi`);
-  }));
+let TPL_CACHE = null;
+const tplNorm = v => String(v || '').toLocaleLowerCase('tr');
+function tplCard(t) {
+  return `<button class="tpl" data-tpl="${esc(t.key)}">
+    <span class="tpl-top"><b>${esc(t.title)}</b>${t.offline ? '<span class="badge ok">Hemen çalışır</span>' : ''}</span>
+    <span class="tpl-text">${esc(t.text)}</span>
+    <span class="flowline">${t.flow.map(f => `<i>${esc(f)}</i>`).join('')}</span>
+    <span class="tpl-needs">${t.needs?.length ? `${icon('key')}<span>${t.needs.map(esc).join(' · ')}</span>` : `${icon('check')}<span>Hesap ya da anahtar gerekmez</span>`}</span>
+  </button>`;
+}
+async function useTemplate(key) {
+  try {
+    const wf = await api('POST', `/api/templates/${encodeURIComponent(key)}`);
+    const t = (TPL_CACHE || []).find(x => x.key === key);
+    closeModal(); location.hash = `#/akis/${wf.id}`;
+    toast(t?.needs?.length ? `"${wf.name}" eklendi. Kimlik bilgisi seçilecek node'lar: ${t.needs.join(', ')}` : `"${wf.name}" eklendi. Çalıştır'a basabilirsiniz.`);
+  } catch (e) { toast(e.message, true); }
+}
+async function openTemplates(startCat) {
+  TPL_CACHE ||= await api('GET', '/api/templates');
+  const list = TPL_CACHE;
+  const cats = [...new Set(list.map(t => t.cat))];
+  let saved = ''; try { saved = localStorage.getItem('am:tplCat') || ''; } catch {}
+  const st = { q: '', cat: typeof startCat === 'string' ? startCat : (saved === 'offline' || cats.includes(saved) ? saved : '') };
+  const chips = [['', 'Tümü', list.length], ['offline', 'Hemen çalışır', list.filter(t => t.offline).length], ...cats.map(c => [c, c, list.filter(t => t.cat === c).length])];
+  openModal(`<div class="mhead"><h2>Şablonlar <span class="count">${list.length}</span></h2><button class="icon-btn" data-close aria-label="Kapat">${icon('x')}</button></div>
+    <div class="tpl-bar"><div class="tpl-search">${icon('search')}<input class="inp" id="tpl-q" placeholder="Ara: telegram, fatura, sipariş, claude…" autocomplete="off" spellcheck="false" aria-label="Şablonlarda ara"></div>
+      <div class="tpl-cats" role="tablist" aria-label="Kategoriler">${chips.map(([k, l, n]) => `<button role="tab" data-cat="${esc(k)}">${esc(l)} <span>${n}</span></button>`).join('')}</div></div>
+    <div class="mbody"><div class="tpls" id="tpl-list"></div></div>
+    <div class="mfoot tpl-foot"><span class="desc">Şablon yeni bir akış olarak eklenir; mevcut akışlarınız değişmez.</span><button class="btn" id="tpl-ai">${icon('wand')}Aradığınız yok mu? Claude ile oluşturun</button></div>`, true);
+  const draw = () => {
+    $('#modal').querySelectorAll('[data-cat]').forEach(b => { const on = b.dataset.cat === st.cat; b.classList.toggle('on', on); b.setAttribute('aria-selected', on); });
+    const words = tplNorm(st.q).split(/\s+/).filter(Boolean);
+    const shown = list.filter(t => (!st.cat || (st.cat === 'offline' ? t.offline : t.cat === st.cat))
+      && words.every(w => tplNorm([t.title, t.text, t.cat, ...t.flow, ...(t.needs || [])].join(' ')).includes(w)));
+    $('#tpl-list').innerHTML = shown.length ? shown.map(tplCard).join('')
+      : `<div class="empty">Aramaya uyan şablon yok.<button class="btn" id="tpl-ai2">${icon('wand')}"${esc(st.q)}" için Claude ile akış oluştur</button></div>`;
+    $('#tpl-ai2')?.addEventListener('click', () => { const q = st.q; closeModal(); openAIBuild(null); const ta = $('#ai-prompt'); if (ta) ta.value = q; });
+  };
+  draw();
+  const q = $('#tpl-q'); q.focus();
+  q.addEventListener('input', () => { if (!st.q && q.value) st.cat = ''; st.q = q.value; draw(); }); // a search looks in every category
+  q.addEventListener('keydown', e => { if (e.key === 'Enter') { const first = $('#tpl-list [data-tpl]'); if (first) { e.preventDefault(); useTemplate(first.dataset.tpl); } } });
+  $('#modal').querySelector('.tpl-cats').addEventListener('click', e => {
+    const b = e.target.closest('[data-cat]'); if (!b) return; st.cat = b.dataset.cat;
+    try { localStorage.setItem('am:tplCat', st.cat); } catch {}
+    draw();
+  });
+  $('#tpl-list').addEventListener('click', e => { const b = e.target.closest('[data-tpl]'); if (b) { b.disabled = true; useTemplate(b.dataset.tpl); } });
+  $('#tpl-ai').addEventListener('click', () => { closeModal(); openAIBuild(null); });
 }
 function openImport(onWorkflow) {
   openModal(`<div class="mhead"><h2>İçe aktar</h2><button class="icon-btn" data-close aria-label="Kapat">${icon('x')}</button></div>
@@ -656,7 +734,7 @@ function openImport(onWorkflow) {
 /* ================= modal ================= */
 function openModal(html, wide) {
   const m = $('#modal'); m.hidden = false;
-  m.innerHTML = `<div class="mcard" role="dialog" style="${wide ? 'width:760px' : ''}">${html}</div>`;
+  m.innerHTML = `<div class="mcard" role="dialog" aria-modal="true" style="${wide === true ? 'width:980px' : wide ? `width:${wide}` : ''}">${html}</div>`;
   m.querySelectorAll('[data-close]').forEach(b => b.addEventListener('click', closeModal));
 }
 function closeModal() { const m = $('#modal'); m.hidden = true; m.innerHTML = ''; }
@@ -792,11 +870,12 @@ async function openEditor(id) {
         <div id="world"><svg id="edges" aria-hidden="true"><g id="edge-g" transform="translate(50000 50000)"></g></svg><div id="elabels"></div><div id="nodes"></div></div>
         <div id="box" hidden></div>
       </div>
-      <div class="cempty" id="cempty" hidden><h2>Akış boş</h2><p>Bir tetikleyici ekleyerek başlayın.</p><button class="btn primary" id="cempty-add">Tetikleyici ekle</button></div>
+      <div class="cempty" id="cempty" hidden><h2>Akış boş</h2><p>Bir tetikleyici ekleyerek başlayın ya da hazır bir şablon seçin.</p><div class="cempty-acts"><button class="btn primary" id="cempty-add">Tetikleyici ekle</button><button class="btn" id="cempty-tpl">${icon('grid')}Şablondan başla</button></div><p class="hint">İpucu: <kbd>Tab</kbd> ya da <kbd>Ctrl</kbd>+<kbd>K</kbd> node arar, <kbd>?</kbd> tüm kısayolları gösterir.</p></div>
       <div class="floating zoombar">
         <button id="z-out" title="Uzaklaş" aria-label="Uzaklaş">${icon('skip')}</button><span class="zl" id="z-label">100%</span>
         <button id="z-in" title="Yakınlaş" aria-label="Yakınlaş">${icon('plus')}</button>
         <button id="z-fit" title="Sığdır (F)" aria-label="Ekrana sığdır"><svg class="i" viewBox="0 0 24 24"><path d="M4 9V4h5M15 4h5v5M20 15v5h-5M9 20H4v-5"/></svg></button>
+        <button id="z-keys" title="Klavye kısayolları (?)" aria-label="Klavye kısayolları">${icon('keyboard')}</button>
       </div>
       <canvas id="minimap" class="floating" aria-label="Mini harita"></canvas>
       <aside id="panel" hidden></aside>
@@ -1056,6 +1135,8 @@ function bindEditor() {
   $('#z-in').addEventListener('click', () => { const r = canvas.getBoundingClientRect(); zoomAt(r.width / 2, r.height / 2, ED.vp.z * 1.2); });
   $('#z-out').addEventListener('click', () => { const r = canvas.getBoundingClientRect(); zoomAt(r.width / 2, r.height / 2, ED.vp.z / 1.2); });
   $('#z-fit').addEventListener('click', fitView);
+  $('#z-keys').addEventListener('click', openShortcuts);
+  $('#cempty-tpl')?.addEventListener('click', () => openTemplates());
   $('#ed-active').addEventListener('change', async e => {
     await saveNow();
     try {
@@ -1173,6 +1254,17 @@ function paste(clip = ED.clipboard, offset = 40) {
   ED.panelOpen = false; renderEditor(); markDirty();
 }
 function duplicate() { const keep = ED.clipboard; const nodes = ED.wf.nodes.filter(n => ED.sel.has(n.id)); paste({ nodes: clone(nodes), edges: clone(ED.wf.edges.filter(e => ED.sel.has(e.from) && ED.sel.has(e.to))) }); ED.clipboard = keep; }
+const SHORTCUTS = [
+  ['Düzenleme', [['Tab', 'Ctrl K'], 'Node ekle (arama)'], [['Ctrl Z'], 'Geri al'], [['Ctrl Shift Z', 'Ctrl Y'], 'Yinele'], [['Ctrl C'], 'Seçili node\'ları kopyala'], [['Ctrl V'], 'Yapıştır'], [['Ctrl D'], 'Çoğalt'], [['Ctrl A'], 'Hepsini seç'], [['Del'], 'Seçileni sil'], [['D'], 'Seçili node\'u kapat / aç']],
+  ['Çalıştırma ve kayıt', [['Ctrl Enter'], 'Akışı çalıştır'], [['Ctrl S'], 'Hemen kaydet']],
+  ['Görünüm', [['F'], 'Ekrana sığdır'], [['Ctrl', 'tekerlek'], 'Yakınlaş / uzaklaş'], [['Shift', 'tekerlek'], 'Yana kaydır'], [['Boşluğa sürükle'], 'Seçim kutusu'], [['Esc'], 'Paneli kapat, seçimi bırak'], [['?'], 'Bu pencere']],
+];
+function openShortcuts() {
+  const kbd = combo => combo.split(' ').map(k => `<kbd>${esc(k)}</kbd>`).join('+');
+  openModal(`<div class="mhead"><h2>Klavye kısayolları</h2><button class="icon-btn" data-close aria-label="Kapat">${icon('x')}</button></div>
+    <div class="mbody keys">${SHORTCUTS.map(([title, ...rows]) => `<section><h3>${esc(title)}</h3>${rows.map(([keys, what]) => `<div class="krow"><span>${esc(what)}</span><span>${keys.map(kbd).join(' <i>ya da</i> ')}</span></div>`).join('')}</section>`).join('')}
+    <p class="desc">Mac'te Ctrl yerine ⌘ kullanabilirsiniz.</p></div>`);
+}
 function editorKeys(e) {
   if (!ED.wf) return;
   const typing = /INPUT|TEXTAREA|SELECT/.test(document.activeElement?.tagName);
@@ -1183,6 +1275,10 @@ function editorKeys(e) {
   if (mod && e.key.toLowerCase() === 'k') { e.preventDefault(); if (!modal) openPalette(); return; }
   if (typing || modal) return;
   const k = e.key.toLowerCase();
+  if (e.key === '?' || (e.key === '/' && e.shiftKey)) { e.preventDefault(); openShortcuts(); return; }
+  // Tab opens node search only from the canvas itself; elsewhere it keeps moving focus
+  const ae = document.activeElement;
+  if (e.key === 'Tab' && !mod && !e.shiftKey && !ED.readonly && (!ae || ae === document.body || ae.id === 'canvas')) { e.preventDefault(); openPalette(); return; }
   if (mod && k === 'z') { e.preventDefault(); e.shiftKey ? redo() : undo(); }
   else if (mod && k === 'y') { e.preventDefault(); redo(); }
   else if (mod && k === 'c') copySelection();
