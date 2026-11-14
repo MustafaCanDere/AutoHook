@@ -2480,6 +2480,95 @@ test('Sunucu bozuk isteklere dayanır: hatalı adres, yabancı Host, bozuk akı�
   assert.equal((await api('GET', '/api/workflows')).length > 0, true);
 });
 
+test('İfadeler: metin şablonu, $("Node"), $input, new Date, düzenli ifade, yayma; tehlikeli olanlar yine kapalı', async () => {
+  const Expr = require('../lib/expr');
+  const item = { json: { ad: 'Ayşe', tutar: 1250, liste: [3, 1, 2], tarih: '2026-11-14T10:00:00Z', s: 'a-b-c' } };
+  const sc = Expr.makeScope({ item, index: 0, items: [item], nodeMap: { 'Önceki': { json: { a: 1 }, items: [{ a: 1 }, { a: 2 }] } } });
+  const r = t => Expr.render(t, sc);
+  assert.equal(r('{{ `Sayın ${$json.ad}, ${$json.tutar * 2} TL` }}'), 'Sayın Ayşe, 2500 TL');
+  assert.equal(r('{{ `a${ `b${$json.liste.length}` }c` }}'), 'ab3c');
+  assert.equal(r('{{ $("Önceki").item.json.a }}'), 1);
+  assert.equal(r('{{ $("Önceki").all().length }}'), 2);
+  assert.equal(r('{{ $("Önceki").last().json.a }}'), 2);
+  assert.throws(() => r('{{ $("Yok").item.json }}'), /"Yok" node'unun çıktısı yok/);
+  assert.equal(r('{{ $input.first().json.ad }}'), 'Ayşe');
+  assert.equal(r('{{ $input.all().length }}'), 1);
+  assert.equal(r('{{ $itemIndex }}'), 0);
+  assert.equal(r('{{ new Date($json.tarih).getUTCFullYear() }}'), 2026);
+  assert.equal(r('{{ new Date(0) }}'), '1970-01-01T00:00:00.000Z');
+  assert.equal(r('x {{ new Date(0) }}'), 'x 1970-01-01T00:00:00.000Z');
+  assert.equal(r('{{ Date.now() > 0 }}'), true);
+  assert.equal(r('{{ $json.s.replace(/-/g, "/") }}'), 'a/b/c');
+  assert.equal(r('{{ /B/i.test($json.s) }}'), true);
+  assert.equal(r('{{ $json.tutar / 2 / 5 }}'), 125);
+  assert.equal(r('{{ 2 ** 3 ** 2 }}'), 512);
+  assert.equal(r('{{ typeof $json.ad }}'), 'string');
+  assert.equal(r('{{ typeof tanimsiz }}'), 'undefined');
+  assert.deepEqual(r('{{ [...$json.liste, 4] }}'), [3, 1, 2, 4]);
+  assert.deepEqual(r('{{ { ...$json, liste: undefined, yeni: 1 }.yeni }}'), 1);
+  assert.equal(r('{{ Math.max(...$json.liste) }}'), 3);
+  for (const bad of ['{{ new Function("return 1")() }}', '{{ /a/.constructor("x") }}', '{{ new Date().constructor }}', '{{ $.constructor }}', '{{ ({ ...{ __proto__: 1 } }) }}']) assert.throws(() => r(bad), Error, bad);
+  assert.throws(() => r('{{ new Array(3) }}'), /yalnızca Date/);
+});
+
+test('Şablon galerisi: kategori ve gerekenler; hazır çalışan şablonlar (TCKN, liste temizleme, QR etiket, teslim tarihi, MCP)', async () => {
+  const list = await api('GET', '/api/templates');
+  assert.ok(list.length >= 50, `${list.length} şablon`);
+  assert.equal(new Set(list.map(t => t.key)).size, list.length);
+  for (const t of list) { assert.ok(t.cat && Array.isArray(t.needs) && t.nodes > 0, t.key); if (t.offline) assert.deepEqual(t.needs, [], t.key); }
+  assert.deepEqual(list.find(t => t.key === 'iadeOnay').needs, ['Telegram botu', 'Stripe', 'SMTP (e-posta)']);
+  // prototype names are not templates or credential types
+  for (const k of ['constructor', 'toString', '__proto__']) await assert.rejects(api('POST', `/api/templates/${k}`, {}), /404/);
+  await assert.rejects(api('POST', '/api/credentials', { type: 'constructor', name: 'x', data: {} }), /400/);
+  await assert.rejects(api('POST', '/api/workflows', wf('kotu-tur', [['constructor', {}]], [])), /4\d\d/);
+
+  // TCKN API: valid → 200, invalid → 422
+  const tk = await api('POST', '/api/templates/tcknDogrula', {});
+  await api('PUT', `/api/workflows/${tk.id}`, { active: true });
+  const call = async body => { const res = await fetch(`${B}/webhook/tckn`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) }); return [res.status, await res.json()]; };
+  assert.deepEqual(await call({ tckn: '10000000146' }), [200, { gecerli: true, tckn: '10000000146' }]);
+  const [st, bad] = await call({ tckn: '12345678901' }); assert.equal(st, 422); assert.equal(bad.gecerli, false); assert.ok(bad.neden);
+  await api('PUT', `/api/workflows/${tk.id}`, { active: false });
+
+  // customer list clean-up: duplicates gone, good rows to Excel, bad rows to CSV
+  const mt = await api('POST', '/api/templates/musteriTemizle', {});
+  let e = await waitExec((await api('POST', `/api/workflows/${mt.id}/run`, {})).executionId);
+  assert.equal(e.status, 'success', e.error);
+  assert.deepEqual(outOf(e, 'Ada göre sırala').map(x => [x.ad, x.telefon, x.eposta]), [['Ayşe Yılmaz', '+905321234567', 'ayse@ornek.com'], ['Can Öztürk', '+905449876543', 'can@ornek.com.tr'], ['Selin Aydın', '+902165554433', 'selin@ornek.com']]);
+  assert.deepEqual(outOf(e, 'Hatalıları topla').map(x => x.ad).sort(), ['Elif Şahin', 'Mehmet Kaya']);
+  assert.ok(fs.existsSync(path.join(DATA, 'dosyalar', 'musteriler-temiz.xlsx')));
+  assert.match(fs.readFileSync(path.join(DATA, 'dosyalar', 'hatali-kayitlar.csv'), 'utf8'), /Mehmet Kaya/);
+
+  // QR labels: one PNG and one PDF per product
+  const qe = await api('POST', '/api/templates/qrEtiket', {});
+  e = await waitExec((await api('POST', `/api/workflows/${qe.id}/run`, {})).executionId);
+  assert.equal(e.status, 'success', e.error);
+  for (const k of ['KUP-1', 'TIS-2', 'DEF-3']) {
+    assert.ok(fs.readFileSync(path.join(DATA, 'dosyalar', 'etiketler', `${k}.pdf`)).subarray(0, 5).toString() === '%PDF-', k);
+    assert.ok(fs.existsSync(path.join(DATA, 'dosyalar', 'etiketler', `${k}.png`)), k);
+  }
+
+  // delivery date skips the weekend and 29 Ekim
+  const td = await api('POST', '/api/templates/teslimTarihi', {});
+  await api('PUT', `/api/workflows/${td.id}`, { active: true });
+  const res = await fetch(`${B}/webhook/teslim`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ siparisTarihi: '2026-10-28' }) });
+  const out = await res.json();
+  assert.equal(res.status, 200, JSON.stringify(out));
+  assert.equal(out.teslim.slice(0, 10), '2026-11-03');
+  assert.match(out.mesaj, /03\.11\.2026/);
+  await api('PUT', `/api/workflows/${td.id}`, { active: false });
+
+  // MCP order lookup reads the data table
+  const tb = await api('POST', '/api/tables', { name: 'Siparişler' }).catch(async () => (await api('GET', '/api/tables')).find(t => t.name === 'Siparişler'));
+  await api('POST', `/api/tables/${tb.id}/rows`, { rows: [{ siparisNo: 'SP-9', durum: 'kargoda', tutar: 99 }] });
+  const ms = await api('POST', '/api/templates/mcpSiparis', {});
+  await api('PUT', `/api/workflows/${ms.id}`, { active: true });
+  const mr = await fetch(`${B}/mcp/magaza`, { method: 'POST', headers: { 'Content-Type': 'application/json', Accept: 'application/json, text/event-stream' }, body: JSON.stringify({ jsonrpc: '2.0', id: 1, method: 'tools/call', params: { name: 'siparis_durumu', arguments: { siparisNo: 'SP-9' } } }) });
+  const mj = await mr.json();
+  assert.equal(JSON.parse(mj.result.content[0].text)[0].durum, 'kargoda');
+  await api('PUT', `/api/workflows/${ms.id}`, { active: false });
+});
+
 test('JSON olmayan API isteği reddedilir', async () => {
   const r = await fetch(`${B}/api/workflows`, { method: 'POST', headers: { 'Content-Type': 'text/plain' }, body: '{}' });
   assert.equal(r.status, 415);
